@@ -83,76 +83,120 @@ void MainWindow::on_timeout()
     pasek.setValue(czas.currentTime().toString("ss").toInt());
 }
 
-bool MainWindow::eventFilter(QObject *obj, QEvent *event) {
-    if (event->type() == QEvent::KeyPress) {
-        QKeyEvent *keyEvent = static_cast<QKeyEvent*>(event);
+bool MainWindow::eventFilter(QObject *watched, QEvent *event)
+{
+    // B: Wykrywanie zdarzenia naciśnięcia klawisza na klawiaturze
+    if (event->type() == QEvent::KeyPress)
+    {
+        statusBar()->showMessage("Mam naciśnięcie klawisza");
 
-        int kodKlawisza = keyEvent->key();
-        QString opisSpecjalny = "";
+        // B: Konwersja ogólnego zdarzenia do formatu zdarzenia klawiatury
+        QKeyEvent *zdarzenie_klawiatury = static_cast<QKeyEvent*>(event);
 
-        switch (kodKlawisza) {
-        case Qt::Key_Left:
-            opisSpecjalny = "strzałka Lewo";
-            break;
-        case Qt::Key_Right:
-            opisSpecjalny = "strzałka Prawo";
-            break;
+        // B: Pobranie aktualnego położenia kursora na ekranie (współrzędne globalne) za pomocą metody statycznej
+        QPoint punkt = QCursor::pos();
+        int xx = punkt.x();
+        int yy = punkt.y();
+
+        // B: Instrukcja wyboru reagująca na konkretne klawisze strzałek kierunkowych
+        switch(zdarzenie_klawiatury->key())
+        {
         case Qt::Key_Up:
-            opisSpecjalny = "strzałka Góra";
+            yy -= 5; // B: Przesunięcie pozycji kursora w górę o 5 pikseli
             break;
         case Qt::Key_Down:
-            opisSpecjalny = "strzałka Dół";
+            yy += 5; // B: Przesunięcie pozycji kursora w dół o 5 pikseli
             break;
-        case Qt::Key_PageUp:
-            opisSpecjalny = "Klawisz PageUp";
+        case Qt::Key_Left:
+            xx -= 5; // B: Przesunięcie pozycji kursora w lewo o 5 pikseli
             break;
-        case Qt::Key_PageDown:
-            opisSpecjalny = "klawisz PageDown";
-            break;
-        case Qt::Key_Space:
-            opisSpecjalny = "klawisz Spacja";
-            break;
-        case Qt::Key_Enter:
-        case Qt::Key_Return:
-            opisSpecjalny = "klawisz Enter";
-            break;
-        case Qt::Key_Shift:
-            opisSpecjalny = "klawisz Shift";
-            mam_shift = true;
+        case Qt::Key_Right:
+            xx += 5; // B: Przesunięcie pozycji kursora w prawo o 5 pikseli
             break;
         default:
             break;
         }
 
-        QString komunikat;
-        if (!opisSpecjalny.isEmpty()) {
-            komunikat = "klawisz specjalny: " + opisSpecjalny;
-        } else {
-            if (mam_shift) {
-                komunikat = "klawisz: \"" + keyEvent->text() + "\" [z shiftem]";
-            } else {
-                komunikat = "klawisz: \"" + keyEvent->text() + "\"";
-            }
-        }
+        // B: Programowe ustawienie nowej globalnej pozycji kursora na ekranie monitora
+        QCursor::setPos(xx, yy);
 
-        setInfo(komunikat, 2);
-
-        return false;
+        return true; // B: Zakończenie dalszego przetwarzania przechwyconego zdarzenia klawiatury
     }
 
-    if (event->type() == QEvent::KeyRelease) {
-        QKeyEvent *keyEvent = static_cast<QKeyEvent*>(event);
-
-        if (keyEvent->key() == Qt::Key_Shift) {
-            mam_shift = false;
-            //setInfo("klawisz SHIFT puszczony", 1);
-        }
-
-        return false;
-    }
-
-    return QMainWindow::eventFilter(obj, event);
+    return QMainWindow::eventFilter(watched, event);
 }
+
+// bool MainWindow::eventFilter(QObject *obj, QEvent *event) {
+
+//     if (event->type() == QEvent::KeyPress) {
+//         QKeyEvent *keyEvent = static_cast<QKeyEvent*>(event);
+
+//         int kodKlawisza = keyEvent->key();
+//         QString opisSpecjalny = "";
+
+//         switch (kodKlawisza) {
+//         case Qt::Key_Left:
+//             opisSpecjalny = "strzałka Lewo";
+//             break;
+//         case Qt::Key_Right:
+//             opisSpecjalny = "strzałka Prawo";
+//             break;
+//         case Qt::Key_Up:
+//             opisSpecjalny = "strzałka Góra";
+//             break;
+//         case Qt::Key_Down:
+//             opisSpecjalny = "strzałka Dół";
+//             break;
+//         case Qt::Key_PageUp:
+//             opisSpecjalny = "Klawisz PageUp";
+//             break;
+//         case Qt::Key_PageDown:
+//             opisSpecjalny = "klawisz PageDown";
+//             break;
+//         case Qt::Key_Space:
+//             opisSpecjalny = "klawisz Spacja";
+//             break;
+//         case Qt::Key_Enter:
+//         case Qt::Key_Return:
+//             opisSpecjalny = "klawisz Enter";
+//             break;
+//         case Qt::Key_Shift:
+//             opisSpecjalny = "klawisz Shift";
+//             mam_shift = true;
+//             break;
+//         default:
+//             break;
+//         }
+
+//         QString komunikat;
+//         if (!opisSpecjalny.isEmpty()) {
+//             komunikat = "klawisz specjalny: " + opisSpecjalny;
+//         } else {
+//             if (mam_shift) {
+//                 komunikat = "klawisz: \"" + keyEvent->text() + "\" [z shiftem]";
+//             } else {
+//                 komunikat = "klawisz: \"" + keyEvent->text() + "\"";
+//             }
+//         }
+
+//         setInfo(komunikat, 2);
+
+//         return false;
+//     }
+
+//     if (event->type() == QEvent::KeyRelease) {
+//         QKeyEvent *keyEvent = static_cast<QKeyEvent*>(event);
+
+//         if (keyEvent->key() == Qt::Key_Shift) {
+//             mam_shift = false;
+//             //setInfo("klawisz SHIFT puszczony", 1);
+//         }
+
+//         return false;
+//     }
+
+//     return QMainWindow::eventFilter(obj, event);
+// }
 
 // PODPUNKT E: Implementacja funkcji slotu obsługującej kliknięcie
 void MainWindow::mamKlikniecieMyszki(int x, int y)
