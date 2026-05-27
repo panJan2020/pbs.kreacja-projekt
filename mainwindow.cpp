@@ -85,42 +85,55 @@ void MainWindow::on_timeout()
 
 bool MainWindow::eventFilter(QObject *watched, QEvent *event)
 {
-    // B: Wykrywanie zdarzenia naciśnięcia klawisza na klawiaturze
+    // C: Wykrywanie zdarzenia zwolnienia klawisza w celu wyzerowania flagi SHIFT
+    if (event->type() == QEvent::KeyRelease)
+    {
+        QKeyEvent *zdarzenie_klawiatury = static_cast<QKeyEvent*>(event);
+        if (zdarzenie_klawiatury->key() == Qt::Key_Shift)
+        {
+            mam_shift = false; // C: Wyzerowanie zmiennej logicznej po puszczeniu klawisza SHIFT
+        }
+        return false; // C: Przekazanie do dalszej obsługi
+    }
+
+    // Wykrywanie zdarzenia naciśnięcia klawisza
     if (event->type() == QEvent::KeyPress)
     {
-        statusBar()->showMessage("Mam naciśnięcie klawisza");
-
-        // B: Konwersja ogólnego zdarzenia do formatu zdarzenia klawiatury
         QKeyEvent *zdarzenie_klawiatury = static_cast<QKeyEvent*>(event);
 
-        // B: Pobranie aktualnego położenia kursora na ekranie (współrzędne globalne) za pomocą metody statycznej
+        // C: Weryfikacja naciśnięcia klawisza SHIFT
+        if (zdarzenie_klawiatury->key() == Qt::Key_Shift)
+        {
+            mam_shift = true; // C: Ustawienie zmiennej logicznej na true
+        }
+
         QPoint punkt = QCursor::pos();
         int xx = punkt.x();
         int yy = punkt.y();
 
-        // B: Instrukcja wyboru reagująca na konkretne klawisze strzałek kierunkowych
+        // C: Definicja zmiennej skoku - 50 pikseli (wielokrotność 10) z SHIFT, 5 pikseli bez SHIFT
+        int skok = mam_shift ? 50 : 5;
+
         switch(zdarzenie_klawiatury->key())
         {
         case Qt::Key_Up:
-            yy -= 5; // B: Przesunięcie pozycji kursora w górę o 5 pikseli
+            yy -= skok; // C: Zastosowanie warunkowego modyfikatora skoku
             break;
         case Qt::Key_Down:
-            yy += 5; // B: Przesunięcie pozycji kursora w dół o 5 pikseli
+            yy += skok; // C: Zastosowanie warunkowego modyfikatora skoku
             break;
         case Qt::Key_Left:
-            xx -= 5; // B: Przesunięcie pozycji kursora w lewo o 5 pikseli
+            xx -= skok; // C: Zastosowanie warunkowego modyfikatora skoku
             break;
         case Qt::Key_Right:
-            xx += 5; // B: Przesunięcie pozycji kursora w prawo o 5 pikseli
+            xx += skok; // C: Zastosowanie warunkowego modyfikatora skoku
             break;
         default:
             break;
         }
 
-        // B: Programowe ustawienie nowej globalnej pozycji kursora na ekranie monitora
         QCursor::setPos(xx, yy);
-
-        return true; // B: Zakończenie dalszego przetwarzania przechwyconego zdarzenia klawiatury
+        return true;
     }
 
     return QMainWindow::eventFilter(watched, event);
